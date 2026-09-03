@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { DataProvider } from './context/DataContext';
 import { Navbar } from './components/Navbar';
@@ -17,6 +17,13 @@ const MainAppContent = () => {
   // Default tab based on role: Staff defaults to Sales, Owner defaults to Dashboard
   const [activeTab, setActiveTab] = useState(isOwner ? 'dashboard' : 'sales');
   
+  // Role Access Guard: ensure staff cannot remain on or switch to owner dashboard
+  useEffect(() => {
+    if (!isOwner && activeTab === 'dashboard') {
+      setActiveTab('sales');
+    }
+  }, [isOwner, activeTab]);
+
   // Edit modal state
   const [editPayload, setEditPayload] = useState(null);
 
@@ -33,14 +40,16 @@ const MainAppContent = () => {
         {/* Navigation Tabs Bar */}
         <div className="tabs-nav">
           
-          {/* OWNER DASHBOARD TAB */}
-          <button
-            className={`tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
-            onClick={() => setActiveTab('dashboard')}
-          >
-            <LayoutDashboard size={16} />
-            {isOwner ? 'Owner Dashboard' : 'Owner View Preview'}
-          </button>
+          {/* OWNER DASHBOARD TAB (Visible only to Owner) */}
+          {isOwner && (
+            <button
+              className={`tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
+              onClick={() => setActiveTab('dashboard')}
+            >
+              <LayoutDashboard size={16} />
+              Owner Dashboard
+            </button>
+          )}
 
           {/* SALES ENTRY TAB (Staff view) */}
           <button
@@ -81,7 +90,7 @@ const MainAppContent = () => {
         </div>
 
         {/* Tab Content Display */}
-        {activeTab === 'dashboard' && <OwnerDashboard />}
+        {activeTab === 'dashboard' && isOwner && <OwnerDashboard />}
         {activeTab === 'sales' && <SalesEntry onEditRecord={(payload) => setEditPayload(payload)} />}
         {activeTab === 'inventory' && <InventoryView />}
         {activeTab === 'expenses' && <ExpenseEntry onEditRecord={(payload) => setEditPayload(payload)} />}

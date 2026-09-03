@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
+import { isSupabaseConfigured } from '../lib/supabase';
 import { Store, UserCheck, LogOut, ArrowRightLeft, ShieldCheck, User } from 'lucide-react';
 
 export const Navbar = () => {
@@ -45,17 +46,19 @@ export const Navbar = () => {
             </span>
           </div>
 
-          {/* Quick Role Switcher for local pair testing */}
-          <button
-            onClick={isStaff ? loginAsDemoOwner : loginAsDemoStaff}
-            className="btn btn-secondary btn-sm"
-            title="Switch view between Staff and Owner for testing"
-          >
-            <ArrowRightLeft size={14} />
-            <span style={{ fontSize: '0.8rem' }}>
-              Switch to {isStaff ? 'Owner' : 'Staff'}
-            </span>
-          </button>
+          {/* Quick Role Switcher for local pair testing (Hidden when Supabase auth is active) */}
+          {!isSupabaseConfigured && (
+            <button
+              onClick={isStaff ? loginAsDemoOwner : loginAsDemoStaff}
+              className="btn btn-secondary btn-sm"
+              title="Switch view between Staff and Owner for testing"
+            >
+              <ArrowRightLeft size={14} />
+              <span style={{ fontSize: '0.8rem' }}>
+                Switch to {isStaff ? 'Owner' : 'Staff'}
+              </span>
+            </button>
+          )}
 
           {/* Logout */}
           <button

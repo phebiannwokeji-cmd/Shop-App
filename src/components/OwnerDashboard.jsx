@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
+import { useAuth } from '../context/AuthContext';
 import { 
   TrendingUp, TrendingDown, DollarSign, Users, AlertTriangle, 
-  Clock, ShieldCheck, Activity, Eye, Banknote, Landmark, CreditCard, BellOff, Layers
+  Clock, ShieldCheck, ShieldAlert, Activity, Eye, Banknote, Landmark, CreditCard, BellOff, Layers
 } from 'lucide-react';
 
 export const OwnerDashboard = () => {
+  const { isOwner } = useAuth();
   const { 
     products, 
     sales, 
@@ -19,6 +21,30 @@ export const OwnerDashboard = () => {
   const [period, setPeriod] = useState('month'); // 'today', 'week', 'month', 'all'
   const [activeSection, setActiveSection] = useState('overview'); // 'overview', 'audit', 'events'
   const [selectedAuditLog, setSelectedAuditLog] = useState(null);
+
+  if (!isOwner) {
+    return (
+      <div className="glass-card" style={{ textAlign: 'center', padding: '3.5rem 1.5rem', maxWidth: '600px', margin: '2rem auto' }}>
+        <div style={{
+          width: '56px',
+          height: '56px',
+          borderRadius: '50%',
+          backgroundColor: 'rgba(239, 68, 68, 0.15)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          margin: '0 auto 1.25rem',
+          color: '#ef4444'
+        }}>
+          <ShieldAlert size={32} />
+        </div>
+        <h2 className="title-md" style={{ color: '#fca5a5' }}>Access Restricted</h2>
+        <p className="subtitle" style={{ marginTop: '0.75rem', lineHeight: 1.6 }}>
+          The Owner Remote Control Center, KPIs, and Audit Records are restricted to Owner accounts. Staff members are limited to operational record entry (Sales, Inventory, Expenses, and Debts).
+        </p>
+      </div>
+    );
+  }
 
   // Helper: Filter records by selected period
   const filterByPeriod = (records, dateField = 'createdAt') => {
