@@ -448,6 +448,7 @@ body {
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.2s ease;
+  text-decoration: none;
 }
 
 .tab-btn:hover {
