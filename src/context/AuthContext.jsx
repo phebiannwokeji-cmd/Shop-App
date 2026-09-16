@@ -1,3 +1,5 @@
+"use client";
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
@@ -19,6 +21,7 @@ const DEMO_OWNER = {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
+    if (typeof window === 'undefined') return DEMO_STAFF;
     const saved = localStorage.getItem('shop_active_user');
     return saved ? JSON.parse(saved) : DEMO_STAFF; // Default to Staff logged in for quick testing
   });
@@ -26,6 +29,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     if (user) {
       localStorage.setItem('shop_active_user', JSON.stringify(user));
     } else {

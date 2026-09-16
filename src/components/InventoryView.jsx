@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { Package, AlertTriangle, Plus, CheckCircle, RefreshCw } from 'lucide-react';

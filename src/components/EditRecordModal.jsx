@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { ShieldAlert, Save, Trash2, X } from 'lucide-react';

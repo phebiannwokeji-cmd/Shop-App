@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { Wallet, PlusCircle, CheckCircle, AlertTriangle, CreditCard, Banknote, Landmark, Edit2, Trash2 } from 'lucide-react';
