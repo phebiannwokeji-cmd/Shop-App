@@ -15,10 +15,10 @@ export const supabase = isSupabaseConfigured
 // stock auto-decrement, immutable audit logs, and silent events.
 // ========================================================
 
-const STORAGE_KEY = 'shop_record_book_data_v1';
+export const STORAGE_KEY = 'shop_record_book_data_v1';
 
 // Initial pre-loaded seed data
-const initialData = {
+export const initialData = {
   globalLowStockThreshold: 10,
   largeExpenseThreshold: 50000,
   agingDebtDaysThreshold: 7,
