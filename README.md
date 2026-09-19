@@ -8,7 +8,9 @@ Shop App is a lightweight web application designed to help small-shop owners and
 
 The project focuses on the operational side of a small retail business rather than being a conventional customer-facing e-commerce store. It brings sales, inventory, expenses, customer debts, business summaries, and activity history into one interface.
 
-The application is currently implemented as a React + Vite frontend. It supports a local/demo mode using browser `localStorage` and includes Supabase authentication and PostgreSQL schema scaffolding for a future hosted, multi-user setup.
+The application is currently implemented as a Next.js App Router frontend (React 19). It supports a local/demo mode using browser `localStorage` and includes Supabase authentication and PostgreSQL schema scaffolding for a future hosted, multi-user setup.
+
+> **Migration status:** The app has been migrated from a Vite SPA to the Next.js App Router — routing only. The business/data logic has **not** been refactored yet; that is planned for a phase 2 follow-up.
 
 🎯 Problem the Project Solves
 
@@ -222,20 +224,22 @@ Why: This creates a migration path toward a real multi-user system while keeping
 
 🏗️ Architecture
 
-The application is organized around React Context providers:
+The application uses the Next.js App Router. The root layout mounts the Context providers, which wrap the logged-in shell (`AppShell`) shared across all routes. Each route renders one feature component.
 
-App
-├── AuthProvider
-│   └── DataProvider
-│       └── MainAppContent
-│           ├── Navbar
-│           ├── Login
-│           ├── OwnerDashboard
-│           ├── SalesEntry
-│           ├── InventoryView
-│           ├── ExpenseEntry
-│           ├── CustomerDebts
-│           └── EditRecordModal
+app/
+├── layout.jsx         Root shell: AuthProvider + DataProvider wrap AppShell
+├── page.jsx           Owner Dashboard route (`/`)
+├── AppShell.jsx       Shared navbar, tab navigation, edit/delete modal
+├── sales/page.jsx     Sales Entry route (`/sales`)
+├── inventory/page.jsx Inventory & Prices route (`/inventory`)
+├── expenses/page.jsx  Expenses route (`/expenses`)
+├── debts/page.jsx     Customer Debts route (`/debts`)
+└── api/chat/          Gemini-backed route handler
+
+src/
+├── components/        Feature components (Navbar, Login, OwnerDashboard, SalesEntry, InventoryView, ExpenseEntry, CustomerDebts, EditRecordModal)
+├── context/           AuthProvider + DataProvider (React Context)
+└── lib/supabase.js    Supabase client + local persistence engine
 
 `AuthContext`
 
@@ -270,9 +274,43 @@ Provides:
 •	Local demo/seed data.
 •	`localStorage` persistence helpers.
 
+🤖 Architecture: Counter vs Office
+
+The shop system has two "front doors", but both call the same shared brain.
+
+Counter (WhatsApp — coming soon)
+
+•	Daily recording will happen at the counter, inside WhatsApp conversations.
+•	Staff type sales, expenses, and debts into chat; the webhook parses them into records.
+•	Low-friction for staff — no app to open or form to fill for every transaction.
+
+Office (React UI — today)
+
+•	The office is where alerts, corrections, and backfilling happen.
+•	The Owner Dashboard aggregates KPIs, low-stock flags, unpaid/aging debts, and background events.
+•	Sales and expense screens are explicitly demoted to correction tools (see the on-screen note at `/sales` and `/expenses`).
+•	WhatsApp deep-links on alert rows draft reminder and restock messages; a server-side send endpoint is planned for phase 5.
+
+Shared brain (`shopService`)
+
+•	Both front doors call the same framework-agnostic `shopService`.
+•	It owns every business rule: overselling prevention, price-based totals, inventory reduction, audit entries on every mutation, and background-event detection.
+•	The store behind it is swappable through the repository interface (`localStorageRepository` today, `SupabaseRepository` soon).
+
+________________________________________
+
 📁 Project Structure
 
 Shop-App/
+├── app/
+│   ├── page.jsx
+│   ├── layout.jsx
+│   ├── AppShell.jsx
+│   ├── sales/page.jsx
+│   ├── inventory/page.jsx
+│   ├── expenses/page.jsx
+│   ├── debts/page.jsx
+│   └── api/chat/
 ├── public/
 ├── src/
 │   ├── assets/
@@ -290,31 +328,26 @@ Shop-App/
 │   │   └── DataContext.jsx
 │   ├── lib/
 │   │   └── supabase.js
-│   ├── App.css
-│   ├── App.jsx
-│   ├── index.css
-│   └── main.jsx
+│   └── index.css
 ├── supabase/
 │   └── schema.sql
-├── index.html
 ├── package.json
 ├── package-lock.json
-├── vite.config.js
 └── .gitignore
 
 🛠️ Technology Stack
 
 | Layer | Technology |
 | --- | --- |
+| Framework | Next.js 15 (App Router) |
 | Frontend | React 19 |
-| Build tool | Vite |
 | Language | JavaScript / JSX |
 | Icons | Lucide React |
 | Authentication | Supabase Auth when configured |
 | Database schema | Supabase / PostgreSQL |
 | Local persistence | Browser `localStorage` |
 | Linting | Oxlint |
-| Deployment | Vercel-compatible Vite build |
+| Deployment | Vercel-compatible Next.js build |
 
 🚀 Getting Started
 
@@ -336,17 +369,17 @@ Start development
 
 npm run dev
 
-Vite normally serves the application at:
+Next.js serves the application at:
 
-http://localhost:5173
+http://localhost:3000
 
 Build for production
 
 npm run build
 
-Preview production build
+Start production server
 
-npm run preview
+npm run start
 
 Run linting
 
@@ -372,13 +405,13 @@ Supabase mode
 
 Configure:
 
-VITE_SUPABASE_URL=your_supabase_project_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 Create `.env.local` in the project root:
 
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 
 Do not commit private credentials or secrets.
 
@@ -494,13 +527,13 @@ The local/demo engine includes sample Nigerian retail products such as:
 
 🌐 Deployment
 
-The application can be deployed as a Vite frontend on platforms such as Vercel.
+The application can be deployed as a Next.js app on platforms such as Vercel.
 
 Typical deployment flow:
 
 3.	Push the repository to GitHub.
 2. Import the repository into the hosting platform.
-3. Use the Vite build configuration.
+3. Use the Next.js build configuration.
 4. Add Supabase environment variables if using hosted authentication/data.
 5. Deploy.
 
@@ -546,6 +579,20 @@ Before using the application as a production multi-user shop management system:
 10. Add database indexes for frequently queried fields.
 11. Introduce database migrations for schema evolution.
 12. Consider scheduled processing for aging-debt detection.
+
+▶️ Next Steps
+
+1. WhatsApp webhook calling `shopService`
+
+   An incoming-message webhook parses counter messages (sales, expenses, debts) into structured records and calls `shopService` exactly like the React UI does today — same rules, same audit trail, same background-event detection.
+
+2. `SupabaseRepository` replacing `localStorageRepository`
+
+   Implement the repository interface over Supabase/PostgreSQL and swap it in behind `shopService`, replacing the browser `localStorage` store without touching business logic.
+
+3. Server-side RLS enforcement
+
+   Move authorization from the client to PostgreSQL Row Level Security so staff/owner roles are enforced at the database layer rather than trusted to the frontend.
 
 🤝 Contributing
 
