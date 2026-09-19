@@ -1,5 +1,6 @@
 import '../src/index.css';
-import { Providers } from './providers';
+import { AuthProvider } from '../src/context/AuthContext';
+import { DataProvider } from '../src/context/DataContext';
 import { AppShell } from './AppShell';
 
 export const metadata = {
@@ -14,11 +15,13 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        <Providers>
-          <AppShell>
-            {children}
-          </AppShell>
-        </Providers>
+        <AuthProvider>
+          <DataProvider>
+            <AppShell>
+              {children}
+            </AppShell>
+          </DataProvider>
+        </AuthProvider>
       </body>
     </html>
   );

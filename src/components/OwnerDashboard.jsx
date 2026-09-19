@@ -5,8 +5,30 @@ import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { 
   TrendingUp, TrendingDown, DollarSign, Users, AlertTriangle, 
-  Clock, ShieldCheck, ShieldAlert, Activity, Eye, Banknote, Landmark, CreditCard, BellOff, Layers
+  Clock, ShieldCheck, ShieldAlert, Activity, Eye, Banknote, Landmark, CreditCard, BellOff, Layers, MessageCircle
 } from 'lucide-react';
+
+// WhatsApp deep-link helpers (client-side only — no backend involved)
+const toWhatsAppNumber = (phone) => {
+  let digits = String(phone || '').replace(/[^0-9]/g, '');
+  if (digits.startsWith('0')) digits = '234' + digits.slice(1); // NG local -> intl
+  return digits;
+};
+
+const waLink = (phoneNumber, message) => {
+  const base = phoneNumber ? `https://wa.me/${phoneNumber}` : 'https://wa.me/';
+  return `${base}?text=${encodeURIComponent(message)}`;
+};
+
+const debtReminderMessage = (debt) =>
+  `Hello ${debt.customerName}! This is Grace & Mercy Store. ` +
+  `Friendly reminder that you have an outstanding balance of ₦${debt.amountOwed.toLocaleString()}. ` +
+  `Kindly settle at your earliest convenience. Thank you!`;
+
+const restockMessage = (product, threshold) =>
+  `Hello! I need to restock at Grace & Mercy Store. ` +
+  `Please quote a price for: ${product.name} — current stock is only ${product.stock} units ` +
+  `(below our ${threshold} threshold). Thank you!`;
 
 export const OwnerDashboard = () => {
   const { isOwner } = useAuth();
@@ -342,12 +364,13 @@ export const OwnerDashboard = () => {
                       <th>Product</th>
                       <th>Fixed Price</th>
                       <th>Current Stock</th>
+                      <th>Action</th>
                     </tr>
                   </thead>
                   <tbody>
                     {lowStockItems.length === 0 ? (
                       <tr>
-                        <td colSpan="3" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '1.5rem' }}>
+                        <td colSpan="4" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '1.5rem' }}>
                           No products below low stock threshold.
                         </td>
                       </tr>
@@ -360,6 +383,16 @@ export const OwnerDashboard = () => {
                             <span className="badge badge-low-stock">
                               {p.stock} units left
                             </span>
+                          </td>
+                          <td>
+                            <a
+                              className="btn btn-secondary btn-sm"
+                              href={waLink('', restockMessage(p, globalLowStockThreshold))}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <MessageCircle size={12} /> Restock via WhatsApp
+                            </a>
                           </td>
                         </tr>
                       ))
@@ -386,12 +419,13 @@ export const OwnerDashboard = () => {
                       <th>Created</th>
                       <th>Customer & Phone</th>
                       <th>Amount Owed</th>
+                      <th>Action</th>
                     </tr>
                   </thead>
                   <tbody>
                     {unpaidDebts.length === 0 ? (
                       <tr>
-                        <td colSpan="3" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '1.5rem' }}>
+                        <td colSpan="4" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '1.5rem' }}>
                           No customer debts recorded.
                         </td>
                       </tr>
@@ -412,6 +446,16 @@ export const OwnerDashboard = () => {
                             </td>
                             <td className="currency" style={{ color: '#fca5a5', fontWeight: 700 }}>
                               ₦{d.amountOwed.toLocaleString()}
+                            </td>
+                            <td>
+                              <a
+                                className="btn btn-secondary btn-sm"
+                                href={waLink(toWhatsAppNumber(d.customerPhone), debtReminderMessage(d))}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <MessageCircle size={12} /> Send reminder
+                              </a>
                             </td>
                           </tr>
                         );
